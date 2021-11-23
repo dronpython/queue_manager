@@ -1,23 +1,30 @@
-import threading
-import time
+import os
+import logging
 from queue import Queue
 from threading import Thread
 from connectors.old_api import old_api_request
 from connectors.DBconnector import db
 
 num_worker_threads = 3
+log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "/logs/log.txt"))
+logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
+                    filename=log_file, level=logging.INFO)
 
 
 def do_work(request):
-    print("my task is", request, "i am ", threading.current_thread())
+
     rqid = request.rqid
+    logging.info(f'Work at request_id {rqid}')
     request_data = db.select_data('queue_requests', 'request_type', 'request_url',
                                   'request_headers', 'request_body',
                                   param_name='rqid', param_value=rqid)
     if request_data:
+        logging.info(f'Got request data {str(request_data)}. Sending request..')
         try:
             response = old_api_request(request_data[0].request_url, request_data[0].request_type,
                                        request_data[0].request_body, request_data[0].request_headers)
+            logging.info(f'Got response with status={str(response.status_code)} '
+                         f'and content={str(response.json())}')
             queue_status = 'DONE'
             resp_sc = str(response.status_code)
             resp_status = '200'  # response.status # ToDo Delete STATUS
@@ -45,11 +52,9 @@ def worker():
 
 def main():
     while True:
-        start_time = time.time()
-        print(f'Time: {start_time}')
         data = db.select_data('queue_main', 'rqid', param_name='status', param_value='PENDING')
-        print(f"Нашли {len(data)} запросов")
         if data:
+            logging.info(f'{len(data)} requests found. Start working...')
             for i in range(num_worker_threads):  # Создаем и запускаем потоки
                 t = Thread(target=worker)
                 t.setDaemon(True)
@@ -57,7 +62,6 @@ def main():
             for request in data:
                 q.put(request)
             q.join()
-            print(f'End time: {time.time() - start_time}')
 
 
 if __name__ == '__main__':

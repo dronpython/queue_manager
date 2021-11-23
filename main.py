@@ -39,6 +39,7 @@ if __name__ == "__main__":
                         content = "{}"
                         resp_sc = '500'
                         resp_status = '500'
+                        # ToDo return 500 status code
 
                     db.insert_data('queue_responses', rqid, resp_sc, resp_status, content)
                     db.update_data('queue_main', field_name='status', field_value=queue_status,

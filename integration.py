@@ -16,11 +16,16 @@ def from_environ(name, default=None, allow_none=False):
 
 try:
     QUEUE_DB_CONFIG = {
-        'host': from_environ('QUEUE_DB_HOST'),
-        'port': from_environ('QUEUE_DB_PORT'),
-        'database': from_environ('QUEUE_DB_NAME'),
-        'user': from_environ('QUEUE_DB_USER'),
-        'password': from_environ('QUEUE_DB_PASSWORD')
+        'host': from_environ('db_host'),
+        'port': from_environ('db_port'),
+        'database': from_environ('db_name'),
+        'user': from_environ('db_user'),
+        'password': from_environ('db_password')
+    }
+
+    OLD_API_CONFIG = {
+        'url': from_environ('old_api_url'),
+        'port': from_environ('old_api_port'),
     }
     # raise Exception
 
