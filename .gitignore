@@ -1,0 +1,4 @@
+/venv
+/.idea
+integration_local.py
+database.ini
