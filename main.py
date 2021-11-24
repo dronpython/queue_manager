@@ -34,7 +34,7 @@ if __name__ == "__main__":
                         content = str(response.json()).replace("'", '"')
 
                     except Exception as e:
-                        print(e)
+                        logging.error(f'Error: {e}')
                         queue_status = 'ERROR'
                         content = "{}"
                         resp_sc = '500'
