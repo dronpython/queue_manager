@@ -16,7 +16,7 @@ ADD /docker/sigma/yum.repos.d/* /etc/yum.repos.d/
 ADD /docker/sigma/ca-certs/* /etc/pki/ca-trust/source/anchors/
 ADD /docker/sigma/pip-sigma.conf /etc/pip.conf
 ADD /requirements.txt /requirements.txt
-ADD /connectors /connectors
+# ADD /connectors /connectors
 
 ENV PATH=/opt/rh/rh-python36/root/usr/bin${PATH:+:${PATH}} \
     LD_LIBRARY_PATH=/opt/rh/rh-python36/root/usr/lib64:/usr/lib/oracle/12.2/client64/lib \
@@ -34,7 +34,7 @@ RUN yum install gcc gcc-c++ \
 
 RUN python3 -m pip install -r /requirements.txt -i http://mirror.sigma.sbrf.ru/pypi/simple/ --trusted-host mirror.sigma.sbrf.ru
 
-COPY . /queue_manager_new
-WORKDIR /queue_manager_new
+COPY . /app
+WORKDIR /app
 
-CMD ["python", "main.py"]
+CMD ["python3", "main_threading.py"]
