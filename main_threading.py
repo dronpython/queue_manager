@@ -49,7 +49,6 @@ def do_work(request):
 def worker():
     while True:
         item = q.get()  # получаем задание из
-        print("get task - ", item)
         do_work(item)  # выполняем работу
         q.task_done()  # сообщаем о завершении работы
 
