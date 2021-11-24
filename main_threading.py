@@ -14,12 +14,12 @@ logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(a
 def do_work(request):
 
     rqid = request.rqid
-    logging.info(f'Work at request_id {str(rqid)}')
+    logging.info("Work at request_id {}".format(str(rqid)))
     request_data = db.select_data('queue_requests', 'request_type', 'request_url',
                                   'request_headers', 'request_body',
                                   param_name='rqid', param_value=rqid)
     if request_data:
-        logging.info(f'Got request data {str(request_data)}. Sending request..')
+        logging.info(f"Got request data {str(request_data)}. Sending request..")
         try:
             response = old_api_request(request_data[0].request_url, request_data[0].request_type,
                                        request_data[0].request_body, request_data[0].request_headers)
