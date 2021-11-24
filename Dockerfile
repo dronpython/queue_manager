@@ -16,7 +16,6 @@ ADD /docker/sigma/yum.repos.d/* /etc/yum.repos.d/
 ADD /docker/sigma/ca-certs/* /etc/pki/ca-trust/source/anchors/
 ADD /docker/sigma/pip-sigma.conf /etc/pip.conf
 ADD /requirements.txt /requirements.txt
-ADD /logs /logs
 
 ENV PATH=/opt/rh/rh-python36/root/usr/bin${PATH:+:${PATH}} \
     LD_LIBRARY_PATH=/opt/rh/rh-python36/root/usr/lib64:/usr/lib/oracle/12.2/client64/lib \

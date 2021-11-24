@@ -3,5 +3,4 @@
 integration_local.py
 database.ini
 docker-compose.yaml
-/logs
-log.txt
+/logs/*
