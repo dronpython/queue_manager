@@ -14,27 +14,27 @@ if __name__ == "__main__":
         data = db.select_data('queue_main', 'rqid', param_name='status', param_value='PENDING')
         # ToDo check priority, increase work_count
         if data:
-            logging.info(f'{len(data)} requests found. Start working...')
+            logging.info('{} requests found. Start working...'.format(str(len(data))))
             for request in data:
                 rqid = request.rqid
-                logging.info(f'Work at request_id {str(rqid)}')
+                logging.info('Work at request_id {}'.format(str(rqid)))
                 request_data = db.select_data('queue_requests', 'request_type', 'request_url',
                                               'request_headers', 'request_body',
                                               param_name='rqid', param_value=rqid)
                 if request_data:
-                    logging.info(f'Got request data {str(request_data)}. Sending request..')
+                    logging.info('Got request data {}. Sending request..'.format(str(request_data)))
                     try:
                         response = old_api_request(request_data[0].request_url, request_data[0].request_type,
                                                    request_data[0].request_body, request_data[0].request_headers)
-                        logging.info(f'Got response with status={str(response.status_code)} '
-                                     f'and content={str(response.json())}')
+                        logging.info('Got response with status={} and content={}'.format(str(response.status_code),
+                                                                                         str(response.json())))
                         queue_status = 'DONE'
                         resp_sc = str(response.status_code)
                         resp_status = '200'  # response.status # ToDo Delete STATUS
                         content = str(response.json()).replace("'", '"')
 
                     except Exception as e:
-                        logging.error(f'Error: {str(e)}')
+                        logging.error('Error: {}'.format(str(e)))
                         queue_status = 'ERROR'
                         content = "{}"
                         resp_sc = '500'
