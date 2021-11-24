@@ -4,7 +4,7 @@ from connectors.DBconnector import db
 import os
 import logging
 
-log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "log.txt"))
+log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logs/log.txt"))
 logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
                     filename=log_file, level=logging.INFO)
 

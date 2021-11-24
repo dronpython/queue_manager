@@ -6,7 +6,7 @@ from connectors.old_api import old_api_request
 from connectors.DBconnector import db
 
 num_worker_threads = 3
-log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "/logs/log.txt"))
+log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logs/log.txt"))
 logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
                     filename=log_file, level=logging.INFO)
 
