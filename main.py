@@ -14,7 +14,8 @@ if __name__ == "__main__":
         data = db.select_data('queue_main', 'rqid', param_name='status', param_value='PENDING')
         # ToDo check priority, increase work_count
         if data:
-            logging.info('{} requests found. Start working...'.format(str(len(data))))
+            logging.info(f'{str(len(data))} requests found. Start working...')
+            # logging.info('{} requests found. Start working...'.format(str(len(data))))
             for request in data:
                 rqid = request.rqid
                 logging.info('Work at request_id {}'.format(str(rqid)))

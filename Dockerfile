@@ -36,4 +36,4 @@ RUN python3 -m pip install -r /requirements.txt -i http://mirror.sigma.sbrf.ru/p
 COPY . /app
 WORKDIR /app
 
-CMD ["python", "main_threading.py"]
+CMD ["python", "main.py"]
