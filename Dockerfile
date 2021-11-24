@@ -32,7 +32,6 @@ RUN yum install gcc gcc-c++ \
     postgresql-devel
 
 RUN python3 -m pip install -r /requirements.txt -i http://mirror.sigma.sbrf.ru/pypi/simple/ --trusted-host mirror.sigma.sbrf.ru
-RUN python3 -m pip install /libs/*
 
 COPY . /app
 WORKDIR /app
