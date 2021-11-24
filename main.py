@@ -17,7 +17,7 @@ if __name__ == "__main__":
             logging.info(f'{len(data)} requests found. Start working...')
             for request in data:
                 rqid = request.rqid
-                logging.info(f'Work at request_id {rqid}')
+                logging.info(f'Work at request_id {str(rqid)}')
                 request_data = db.select_data('queue_requests', 'request_type', 'request_url',
                                               'request_headers', 'request_body',
                                               param_name='rqid', param_value=rqid)
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                         content = str(response.json()).replace("'", '"')
 
                     except Exception as e:
-                        logging.error(f'Error: {e}')
+                        logging.error(f'Error: {str(e)}')
                         queue_status = 'ERROR'
                         content = "{}"
                         resp_sc = '500'

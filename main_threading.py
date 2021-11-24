@@ -14,7 +14,7 @@ logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(a
 def do_work(request):
 
     rqid = request.rqid
-    logging.info(f'Work at request_id {rqid}')
+    logging.info(f'Work at request_id {str(rqid)}')
     request_data = db.select_data('queue_requests', 'request_type', 'request_url',
                                   'request_headers', 'request_body',
                                   param_name='rqid', param_value=rqid)
@@ -31,7 +31,7 @@ def do_work(request):
             content = str(response.json()).replace("'", '"')
 
         except Exception as e:
-            logging.error(f'Error: {e}')
+            logging.error(f'Error: {str(e)}')
             queue_status = 'ERROR'
             content = "{}"
             resp_sc = '500'
