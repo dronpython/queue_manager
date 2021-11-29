@@ -10,11 +10,13 @@ log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'db_log
 logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
                     filename=log_file, level=logging.INFO)
 
-query_dict = {"select_new_requests": """SELECT qm.request_id, domain, author, request_type, request_url, request_body  
+query_dict = {"select_new_requests": """SELECT qm.request_id, domain, username, request_type, request_url, request_body  
                                         FROM queue_main qm
                                         JOIN queue_requests qr on qm.request_id = qr.request_id
-                                        WHERE qm.status = 'PENDING'
-                                        ORDER BY qm.timestamp""",
+                                        WHERE qm.status = 'pending'
+                                        AND qm.work_count < 3
+                                        ORDER BY qm.timestamp
+                                        LIMIT {}""",
               "update_main_then_finished": """UPDATE queue_main
                                               SET status = '{status}', work_count = work_count + 1
                                               WHERE request_id = '{request_id}'"""}
@@ -29,7 +31,7 @@ class DB:
         try:
             return connect(**self.config)
         except Exception as error:
-            logging.error(error)
+            logging.error(str(error))
             return None
 
     def select_data(self, table, *args, param_name: Union[str, int] = 1, param_value: Union[str, int] = 1):
@@ -45,7 +47,7 @@ class DB:
                 query_result = cur.fetchall()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                print(error)
+                logging.error(str(error))
                 query_result = None
             return query_result
 
@@ -75,7 +77,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(error)
+                logging.error(str(error))
 
     def universal_select(self, query):
         """Выборка записей из базы данных."""
@@ -85,9 +87,11 @@ class DB:
                 cur.execute(query)
                 data = cur.fetchall()
                 cur.close()
-                return data
             except (Exception, DatabaseError) as error:
-                logging.error(error)
+                logging.error(str(error))
+                data = None
+            finally:
+                return data
 
     def universal_insert(self, query):
         """ Вставка записи в базу данных."""
@@ -98,7 +102,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(error)
+                logging.error(str(error))
 
     def universal_update(self, query):
         """ Обновленме записи в базе данных."""
@@ -109,7 +113,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(error)
+                logging.error(str(error))
 
 
 db = DB(QUEUE_DB_CONFIG)

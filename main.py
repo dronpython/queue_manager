@@ -1,5 +1,5 @@
 from connectors.old_api import old_api_request
-# from time import sleep, time
+from time import sleep, time
 from connectors.DBconnector import db
 import os
 import logging
@@ -11,9 +11,10 @@ logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(a
 
 
 if __name__ == "__main__":
+    start_time = time()
     while True:
-        data = db.select_data('queue_main', 'request_id', param_name='status', param_value='PENDING')
-        # ToDo check priority, increase work_count
+        data = db.select_data('queue_main', 'request_id', param_name='status', param_value='pending')
+        # ToDo check priority
         if data:
             # logging.info(f'{str(len(data))} requests found. Start working...')
             logging.info('{} requests found. Start working...'.format(str(len(data))))
@@ -31,14 +32,14 @@ if __name__ == "__main__":
                                                    request_data[0].request_body, request_data[0].request_headers)
                         logging.info('Got response with status={} and content={}'.format(str(response.status_code),
                                                                                          str(response.json())))
-                        queue_status = 'DONE'
+                        queue_status = 'done'
                         resp_sc = str(response.status_code)
                         resp_status = '200'  # response.status # ToDo Delete STATUS
                         content = str(response.json()).replace("'", '"')
 
                     except Exception as e:
                         logging.error('Error: {}'.format(str(e)))
-                        queue_status = 'ERROR'
+                        queue_status = 'error'
                         content = "{}"
                         resp_sc = '500'
                         resp_status = '500'
@@ -47,3 +48,4 @@ if __name__ == "__main__":
                     db.insert_data('queue_responses', request_id, resp_sc, resp_status, content)
                     db.update_data('queue_main', field_name='status', field_value=queue_status,
                                    param_name='request_id', param_value=request_id)
+            print(time()-start_time)
