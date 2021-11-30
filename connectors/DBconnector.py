@@ -2,13 +2,7 @@ from psycopg2.extras import NamedTupleCursor
 from psycopg2 import connect, DatabaseError
 from integration import QUEUE_DB_CONFIG
 from typing import Union
-
 import logging
-import os
-
-log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'db_log.txt'))
-logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
-                    filename=log_file, level=logging.INFO)
 
 query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.username, qr.request_type, 
                                                qr.request_url, qr.request_body, qr.request_headers

@@ -1,5 +1,6 @@
 import os
 import logging
+from logging import config
 from queue import Queue
 from threading import Thread
 from connectors.old_api import old_api_request
@@ -7,9 +8,7 @@ from connectors.DBconnector import db, query_dict
 
 num_threads = 10
 limit = 100
-log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log.txt'))
-logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
-                    filename=log_file, level=logging.INFO)
+logging.config.fileConfig('log.ini')
 
 
 def do_work(request):
@@ -19,19 +18,19 @@ def do_work(request):
 
     if request.request_headers:
         # do request
-        # logging.info(f'Got request data {str(request_data)}. Sending request..')
+        logging.info(f'Got request data {str(request)}. Sending request..')
         try:
             response = old_api_request(request.request_url, request.request_type,
                                        request.request_body, request.request_headers)
-            # logging.info(f'Got response with status={str(response.status_code)} '
-            #              f'and content={str(response.json())}')
+            logging.info(f'Got response with status={str(response.status_code)} '
+                         f'and content={str(response.json())}')
 
             queue_status = 'done'
             response_status_code = str(response.status_code)
             content = str(response.json()).replace("'", '"')
 
         except Exception as e:
-            # logging.error(f'Error: {str(e)}')
+            logging.error(f'Error: {str(e)}')
             queue_status = 'error'
             content = "{}"
             response_status_code = '500'
