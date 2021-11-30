@@ -17,7 +17,7 @@ def do_work(request):
     db.update_data('queue_main', field_name='status', field_value='working',
                    param_name='request_id', param_value=request.request_id)
 
-    if request.request_body:
+    if request.request_headers:
         # do request
         # logging.info(f'Got request data {str(request_data)}. Sending request..')
         try:
