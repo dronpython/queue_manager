@@ -1,4 +1,3 @@
-import os
 import logging
 from logging import config
 from queue import Queue
@@ -12,12 +11,11 @@ logging.config.fileConfig('log.ini')
 
 
 def do_work(request):
-    # change status to 'working'
+    logging.info(f"Change status request_id {str(request.request_id)} to 'working'")
     db.update_data('queue_main', field_name='status', field_value='working',
                    param_name='request_id', param_value=request.request_id)
 
     if request.request_headers:
-        # do request
         logging.info(f'Got request data {str(request)}. Sending request..')
         try:
             response = old_api_request(request.request_url, request.request_type,
@@ -35,12 +33,14 @@ def do_work(request):
             content = "{}"
             response_status_code = '500'
 
-        # update tables
+        logging.info('Updating tables...')
         db.insert_data('queue_responses', request.request_id, response_status_code, content)
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id, status=queue_status)
         db.universal_update(query)
+        logging.info(f'Request {request.request_id} - finished!')
 
     else:
+        logging.error(f'Request {str(request.request_id)} - no request data. Skip it')
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id, status='pending')
         db.universal_update(query)
 
