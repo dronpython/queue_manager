@@ -10,7 +10,8 @@ log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'db_log
 logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
                     filename=log_file, level=logging.INFO)
 
-query_dict = {"select_new_requests": """SELECT qm.request_id, domain, username, request_type, request_url, request_body  
+query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.username, qr.request_type, 
+                                               qr.request_url, qr.request_body, qr.request_headers
                                         FROM queue_main qm
                                         JOIN queue_requests qr on qm.request_id = qr.request_id
                                         WHERE qm.status = 'pending'
