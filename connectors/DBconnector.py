@@ -14,7 +14,8 @@ query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.usernam
                                         LIMIT {}""",
               "update_main_then_finished": """UPDATE queue_main
                                               SET status = '{status}', work_count = work_count + 1
-                                              WHERE request_id = '{request_id}'"""}
+                                              WHERE request_id = '{request_id}'""",
+              "change_status_to_working_by_id": "UPDATE queue_main SET status='working' where request_id in {}"}
 
 
 class DB:

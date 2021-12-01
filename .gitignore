@@ -1,6 +1,6 @@
 /venv
 /.idea
-integration_local.py
+integration_local
 database.ini
 docker-compose.yaml
 /logs
