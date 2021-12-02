@@ -1,5 +1,6 @@
 import logging
-from logging import config
+import logging.config
+import yaml
 from queue import Queue
 from threading import Thread
 from connectors.old_api import old_api_request
@@ -7,7 +8,11 @@ from connectors.DBconnector import db, query_dict
 
 num_threads = 10
 limit = 100
-logging.config.fileConfig('log.ini')
+
+with open('./logging_/config.yaml', 'r') as stream:
+    config = yaml.load(stream, Loader=yaml.FullLoader)
+
+logging.config.dictConfig(config)
 
 
 def do_work(request):
@@ -51,6 +56,7 @@ def worker():
 def main():
     while True:
         data = db.universal_select(query_dict['select_new_requests'].format(limit))
+        logging.info(f"AToken:asdasd21r13r1dad2")
         if data:
             logging.info(f'{str(len(data))} requests found. Start working...')
             logging.info(f"Change status found requests to 'working'...")
@@ -65,6 +71,5 @@ if __name__ == '__main__':
     q = Queue()
     for i in range(num_threads):  # Создаем и запускаем потоки
         t = Thread(target=worker)
-        # t.setDaemon(True)
         t.start()
     main()

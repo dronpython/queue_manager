@@ -1,0 +1,32 @@
+version: 1
+disable_existing_loggers: False
+
+filters:
+  masking:
+    (): logging_.filters.maskingfilter.MaskingFilter
+    mask: "*****"
+    patterns:
+      - "AToken:[a-z0-9]+"
+      - "(?<=(?:\"|')password(?:\"|'): (?:\"|'))[^\"']+(?=(?:\"|'))"
+      - "(?<=(?:\"|')Authorization(?:\"|'): (?:\"|')Basic )[^\"']+(?=(?:\"|'))"
+      - "(?<=(?:\"|')Auth(?:\"|'): \\()(.*)(?=\\), (?:\"|'))"
+      - "(?<=(?:\"|')access_token(?:\"|'): (?:\"|'))[^\"']+(?=(?:\"|'))"
+
+handlers:
+  socket:
+    (): logging_.handlers.jsonsockethandler.JSONSocketHandler
+    filters:
+      - masking
+#    host: log-receiver
+    host: '0.0.0.0'
+    port: 9021
+#
+#loggers:
+#  devopsapi:
+#    qualname: devopsapi
+#    handlers:
+#      - socket
+root:
+  handlers:
+    - socket
+  level: INFO
