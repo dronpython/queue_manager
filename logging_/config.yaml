@@ -17,10 +17,10 @@ handlers:
     (): logging_.handlers.jsonsockethandler.JSONSocketHandler
     filters:
       - masking
-#    host: log-receiver
-    host: '0.0.0.0'
+    host: log-receiver
+#    host: '0.0.0.0'
     port: 9021
-#
+
 #loggers:
 #  devopsapi:
 #    qualname: devopsapi
