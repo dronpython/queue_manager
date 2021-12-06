@@ -1,11 +1,11 @@
-import logging
 import logging.config
 import yaml
 from queue import Queue
-from threading import Thread
+from threading import Thread, current_thread
 from connectors.old_api import old_api_request
 from connectors.DBconnector import db, query_dict
 from integration import THREAD_COUNT, REQUEST_LIMIT
+from time import sleep
 
 extra = {"source": "qmanager"}
 
@@ -18,13 +18,13 @@ logger = logging.LoggerAdapter(logger, extra)
 
 
 def do_work(request):
+    log_info = f'request_id={str(request.request_id)}: '
     if request.request_headers:
-        logger.info(f'Got request data {str(request)}. Sending request..')
+        logger.info(f'{log_info}Thread - {current_thread()}. Got request data {str(request)}. Sending request..')
         try:
             response = old_api_request(request.request_url, request.request_type,
                                        request.request_body, request.request_headers)
-            logger.info(f'Got response with status={str(response.status_code)} '
-                         f'and content={str(response.json())}')
+            logger.info(f'{log_info}Got response with status={str(response.status_code)} and content={str(response.json())}')
 
             queue_status = 'done'
             response_status_code = str(response.status_code)
@@ -36,14 +36,14 @@ def do_work(request):
             content = "{}"
             response_status_code = '500'
 
-        logger.info('Updating tables...')
+        logger.info(f'{log_info}Updating tables...')
         db.insert_data('queue_responses', request.request_id, response_status_code, content)
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id, status=queue_status)
         db.universal_update(query)
-        logger.info(f'Request {request.request_id} - finished!')
+        logger.info(f'{log_info} Finished!')
 
     else:
-        logger.error(f'Request {str(request.request_id)} - no request data. Skip it')
+        logger.error(f'{log_info}No request data. Skip it')
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id, status='pending')
         db.universal_update(query)
 
@@ -65,7 +65,7 @@ def main():
             db.universal_update(query_dict["change_status_to_working_by_id"].format(all_ids))
             for request in data:
                 q.put(request)
-            # q.join()
+            sleep(1)
 
 
 if __name__ == '__main__':
