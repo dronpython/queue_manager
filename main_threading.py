@@ -57,8 +57,7 @@ def worker():
 
 def main():
     while True:
-        data = db.universal_select(query_dict['select_new_requests'].format(REQUEST_LIMIT))
-        logger.info('asdasd')
+        data = db.universal_select(query_dict['select_new_requests'].format(int(REQUEST_LIMIT)))
         if data:
             logger.info(f'{str(len(data))} requests found. Start working...')
             logger.info(f"Change status found requests to 'working'...")
@@ -71,7 +70,7 @@ def main():
 
 if __name__ == '__main__':
     q = Queue()
-    for i in range(THREAD_COUNT):  # Создаем и запускаем потоки
+    for i in range(int(THREAD_COUNT)):  # Создаем и запускаем потоки
         t = Thread(target=worker)
         t.start()
     main()
