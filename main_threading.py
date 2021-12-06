@@ -5,14 +5,15 @@ from queue import Queue
 from threading import Thread
 from connectors.old_api import old_api_request
 from connectors.DBconnector import db, query_dict
+from integration import THREAD_COUNT, REQUEST_LIMIT
 
-num_threads = 10
-limit = 10
 
 with open('./logging_/config.yaml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
 
 logging.config.dictConfig(config)
+
+source = {"source": "qmanager"}
 
 
 def do_work(request):
@@ -55,7 +56,7 @@ def worker():
 
 def main():
     while True:
-        data = db.universal_select(query_dict['select_new_requests'].format(limit))
+        data = db.universal_select(query_dict['select_new_requests'].format(REQUEST_LIMIT))
         if data:
             logging.info(f'{str(len(data))} requests found. Start working...')
             logging.info(f"Change status found requests to 'working'...")
@@ -68,7 +69,7 @@ def main():
 
 if __name__ == '__main__':
     q = Queue()
-    for i in range(num_threads):  # Создаем и запускаем потоки
+    for i in range(THREAD_COUNT):  # Создаем и запускаем потоки
         t = Thread(target=worker)
         t.start()
     main()
