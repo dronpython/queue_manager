@@ -27,6 +27,17 @@ try:
         'url': from_environ('old_api_url'),
         'port': from_environ('old_api_port'),
     }
+
+    DB_TEST_CREEDS = {
+        'host': from_environ('db_host'),
+        'port': from_environ('db_port'),
+        'database': from_environ('db_name'),
+        'user': from_environ('db_user'),
+        'password': from_environ('db_password')
+    }
+
+    REQUEST_LIMIT = from_environ('request_limit')
+    THREAD_COUNT = from_environ('thread_count')
     # raise Exception
 
 except Exception as EE:

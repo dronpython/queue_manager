@@ -1,77 +1,76 @@
-import os
-import logging
+import logging.config
+import yaml
 from queue import Queue
-from threading import Thread
+from threading import Thread, current_thread
 from connectors.old_api import old_api_request
-from connectors.DBconnector import db
+from connectors.DBconnector import db, query_dict
+from integration import THREAD_COUNT, REQUEST_LIMIT
+from time import sleep
 
-num_worker_threads = 3
-log_file = str(os.path.join(os.path.dirname(os.path.realpath(__file__)), "/logs/log.txt"))
-logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
-                    filename=log_file, level=logging.INFO)
+extra = {"source": "qmanager"}
+
+with open('./logging_/config.yaml', 'r') as stream:
+    config = yaml.load(stream, Loader=yaml.FullLoader)
+
+logging.config.dictConfig(config)
+logger = logging.getLogger(__name__)
+logger = logging.LoggerAdapter(logger, extra)
 
 
 def do_work(request):
-
-    rqid = request.rqid
-    logging.info(f'Work at request_id {rqid}')
-    request_data = db.select_data('queue_requests', 'request_type', 'request_url',
-                                  'request_headers', 'request_body',
-                                  param_name='rqid', param_value=rqid)
-    if request_data:
-        logging.info(f'Got request data {str(request_data)}. Sending request..')
+    log_info = f'request_id={str(request.request_id)}: '
+    if request.request_headers:
+        logger.info(f'{log_info}Thread - {current_thread()}. Got request data {str(request)}. Sending request..')
         try:
-            response = old_api_request(request_data[0].request_url, request_data[0].request_type,
-                                       request_data[0].request_body, request_data[0].request_headers)
-            logging.info(f'Got response with status={str(response.status_code)} '
-                         f'and content={str(response.json())}')
-            queue_status = 'DONE'
-            resp_sc = str(response.status_code)
-            resp_status = '200'  # response.status # ToDo Delete STATUS
+            response = old_api_request(request.request_url, request.request_type,
+                                       request.request_body, request.request_headers)
+            logger.info(f'{log_info}Got response with status={str(response.status_code)} and content={str(response.json())}')
+
+            queue_status = 'done'
+            response_status_code = str(response.status_code)
             content = str(response.json()).replace("'", '"')
 
         except Exception as e:
-            print(e)
-            queue_status = 'ERROR'
+            logger.error(f'Error: {str(e)}')
+            queue_status = 'error'
             content = "{}"
-            resp_sc = '500'
-            resp_status = '500'
+            response_status_code = '500'
 
-        db.insert_data('queue_responses', rqid, resp_sc, resp_status, content)
-        db.update_data('queue_main', field_name='status', field_value=queue_status,
-                       param_name='rqid', param_value=rqid)
+        logger.info(f'{log_info}Updating tables...')
+        db.insert_data('queue_responses', request.request_id, response_status_code, content)
+        query = query_dict["update_main_then_finished"].format(request_id=request.request_id, status=queue_status)
+        db.universal_update(query)
+        logger.info(f'{log_info} Finished!')
+
+    else:
+        logger.error(f'{log_info}No request data. Skip it')
+        query = query_dict["update_main_then_finished"].format(request_id=request.request_id, status='pending')
+        db.universal_update(query)
 
 
 def worker():
     while True:
         item = q.get()  # получаем задание из
-        print("get task - ", item)
         do_work(item)  # выполняем работу
         q.task_done()  # сообщаем о завершении работы
 
 
 def main():
     while True:
-        data = db.select_data('queue_main', 'rqid', param_name='status', param_value='PENDING')
+        data = db.universal_select(query_dict['select_new_requests'].format(int(REQUEST_LIMIT)))
         if data:
-            logging.info(f'{len(data)} requests found. Start working...')
-            for i in range(num_worker_threads):  # Создаем и запускаем потоки
-                t = Thread(target=worker)
-                t.setDaemon(True)
-                t.start()
+            logger.info(f'{str(len(data))} requests found. Start working...')
+            logger.info(f"Change status found requests to 'working'...")
+            all_ids = tuple([request.request_id for request in data])
+            db.universal_update(query_dict["change_status_to_working_by_id"].format(all_ids))
             for request in data:
                 q.put(request)
-            q.join()
+            sleep(1)
 
 
 if __name__ == '__main__':
     q = Queue()
+    for i in range(int(THREAD_COUNT)):  # Создаем и запускаем потоки
+        t = Thread(target=worker)
+        t.start()
     main()
-
-# for i in range(num_worker_threads):  # Создаем и запускаем потоки
-#     t = Thread(target=worker)
-#     t.setDaemon(True)
-#     t.start()
-# for item in range(0, 5):  # помещаем задания в очередь
-#     q.put(item)
-# q.join()  # Ждем, пока не будут выполнены все задания
