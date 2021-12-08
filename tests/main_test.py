@@ -40,6 +40,9 @@ class TestConnection(unittest.TestCase):
         response = old_api_request(endpoint, req_type, req_body, headers)
         self.assertEqual(response.status_code, 401, 'Status codes not equal')
 
+    # def tearDown(self) -> None:
+    #     execute("ALTER TABLE")
+
 
 if __name__ == '__main__':
     unittest.main()
