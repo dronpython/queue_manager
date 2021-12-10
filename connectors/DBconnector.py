@@ -4,6 +4,10 @@ from psycopg2 import connect, DatabaseError
 from integration import QUEUE_DB_CONFIG
 from typing import Union
 
+extra = {"source": "qmanager"}
+logger = logging.getLogger(__name__)
+logger = logging.LoggerAdapter(logger, extra)
+
 query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.username, qr.request_type, 
                                                qr.request_url, qr.request_body, qr.request_headers
                                         FROM queue_main qm
@@ -15,7 +19,7 @@ query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.usernam
               "update_main_then_finished": """UPDATE queue_main
                                               SET status = '{status}', work_count = work_count + 1
                                               WHERE request_id = '{request_id}'""",
-              "change_status_to_working_by_id": "UPDATE queue_main SET status='working' where request_id in {}"}
+              "change_status_to_working_by_id": "UPDATE queue_main SET status='working' where request_id in ('{}')"}
 
 
 class DB:
@@ -27,7 +31,7 @@ class DB:
         try:
             return connect(**self.config)
         except Exception as error:
-            logging.error(str(error))
+            logger.error(error)
             return None
 
     def select_data(self, table, *args, param_name: Union[str, int] = 1, param_value: Union[str, int] = 1):
@@ -43,7 +47,7 @@ class DB:
                 query_result = cur.fetchall()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(str(error))
+                logger.error(error)
                 query_result = None
             return query_result
 
@@ -59,7 +63,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(str(error))
+                logger.error(error)
 
     def update_data(self, table, **kwargs):
         """ Обновленме записи в базе данных."""
@@ -73,7 +77,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(str(error))
+                logger.error(error)
 
     def universal_select(self, query):
         """Выборка записей из базы данных."""
@@ -84,7 +88,7 @@ class DB:
                 data = cur.fetchall()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(str(error))
+                logger.error(error)
                 data = None
             finally:
                 return data
@@ -98,7 +102,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(str(error))
+                logger.error(error)
 
     def universal_update(self, query):
         """ Обновленме записи в базе данных."""
@@ -109,7 +113,7 @@ class DB:
                 conn.commit()
                 cur.close()
             except (Exception, DatabaseError) as error:
-                logging.error(str(error))
+                logger.error(error)
 
 
 db = DB(QUEUE_DB_CONFIG)

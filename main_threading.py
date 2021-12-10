@@ -1,5 +1,6 @@
 import logging.config
 import yaml
+import json
 from queue import Queue
 from threading import Thread, current_thread
 from connectors.old_api import old_api_request
@@ -24,11 +25,11 @@ def do_work(request):
         try:
             response = old_api_request(request.request_url, request.request_type,
                                        request.request_body, request.request_headers)
-            logger.info(f'{log_info}Got response with status={str(response.status_code)} and content={str(response.json())}')
+            logger.info(f'{log_info}Got response status={str(response.status_code)}.Content={str(response.json())}')
 
             queue_status = 'done'
             response_status_code = str(response.status_code)
-            content = str(response.json()).replace("'", '"')
+            content = json.dumps(response.json())
 
         except Exception as e:
             logger.error(f'Error: {str(e)}')
@@ -61,7 +62,7 @@ def main():
         if data:
             logger.info(f'{str(len(data))} requests found. Start working...')
             logger.info(f"Change status found requests to 'working'...")
-            all_ids = tuple([request.request_id for request in data])
+            all_ids = "','".join(str(request.request_id) for request in data)
             db.universal_update(query_dict["change_status_to_working_by_id"].format(all_ids))
             for request in data:
                 q.put(request)
