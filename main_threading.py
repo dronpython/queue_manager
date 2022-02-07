@@ -34,8 +34,8 @@ def do_work(request):
         except Exception as e:
             logger.error(f'Error: {str(e)}')
             queue_status = 'error'
-            content = "{}"
-            response_status_code = '500'
+            content = json.dumps(response.json()) if response else '{}'
+            response_status_code = str(response.status_code) if response else '520'
 
         logger.info(f'{log_info}Updating tables...')
         db.insert_data('queue_responses', request.request_id, response_status_code, content)
