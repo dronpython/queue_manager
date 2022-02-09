@@ -22,6 +22,7 @@ def do_work(request):
     log_info = f'request_id={str(request.request_id)}: '
     if request.request_headers:
         logger.info(f'{log_info}Thread - {current_thread()}. Got request data {str(request)}. Sending request..')
+        response = None
         try:
             response = old_api_request(request.request_url, request.request_type,
                                        request.request_body, request.request_headers)
