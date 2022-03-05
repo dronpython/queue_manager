@@ -41,5 +41,6 @@ class TestConnection(unittest.TestCase):
         self.assertEqual(response.status_code, 401, 'Status codes not equal')
 
 
+
 if __name__ == '__main__':
     unittest.main()
