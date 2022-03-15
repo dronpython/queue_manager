@@ -1,31 +1,44 @@
-import logging.config
+import logging.config as cfg
+import logging
 import yaml
 import json
+import uuid
 from queue import Queue
 from threading import Thread, current_thread
-from connectors.old_api import old_api_request
+from connectors.old_api import api_request
 from connectors.DBconnector import db, query_dict
 from integration import THREAD_COUNT, REQUEST_LIMIT
 from time import sleep
+from contextvars import ContextVar
 
-extra = {"source": "qmanager"}
+
+class RequestIdFilter(logging.Filter):
+    def filter(self, record):
+        record.request_id = request_id.get()
+        return True
+
 
 with open('./logging_/config.yaml', 'r') as stream:
     config = yaml.load(stream, Loader=yaml.FullLoader)
 
-logging.config.dictConfig(config)
+
+cfg.dictConfig(config)
+
 logger = logging.getLogger(__name__)
-logger = logging.LoggerAdapter(logger, extra)
+request_id: ContextVar[str] = ContextVar('request_id', default='service')
+
+logger.addFilter(RequestIdFilter())
 
 
 def do_work(request):
+    request_id.set(request.request_headers.get('X-Request-Id', str(uuid.uuid4())))
     log_info = f'request_id={str(request.request_id)}: '
     if request.request_headers:
         logger.info(f'{log_info}Thread - {current_thread()}. Got request data {str(request)}. Sending request..')
         response = None
         try:
-            response = old_api_request(request.request_url, request.request_type,
-                                       request.request_body, request.request_headers)
+            response = api_request(request.request_url, request.request_type,
+                                   request.request_body, request.request_headers)
             logger.info(f'{log_info}Got response status={str(response.status_code)}.Content={str(response.json())}')
 
             queue_status = 'done'
