@@ -27,6 +27,10 @@ try:
         'url': from_environ('old_api_url'),
         'port': from_environ('old_api_port'),
     }
+    NEW_API_CONFIG = {
+        'url': from_environ('new_api_url'),
+        'port': from_environ('new_api_port'),
+    }
 
     DB_TEST_CREEDS = {
         'host': from_environ('db_host'),
