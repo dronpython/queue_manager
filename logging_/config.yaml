@@ -11,21 +11,24 @@ filters:
       - "(?<=(?:\"|')Authorization(?:\"|'): (?:\"|')Basic )[^\"']+(?=(?:\"|'))"
       - "(?<=(?:\"|')Auth(?:\"|'): \\()(.*)(?=\\), (?:\"|'))"
       - "(?<=(?:\"|')access_token(?:\"|'): (?:\"|'))[^\"']+(?=(?:\"|'))"
+  appname:
+    (): logging_.filters.namefilter.AppFilter
+
+formatters:
+  simple:
+    format: '%(request_id)s - %(asctime)s - %(source)s - %(levelname)s - %(message)s'
 
 handlers:
   socket:
     (): logging_.handlers.jsonsockethandler.JSONSocketHandler
     filters:
       - masking
+      - appname
+    formatter: simple
     host: log-receiver
-#    host: '0.0.0.0'
+    # host: 'localhost'
     port: 9021
 
-#loggers:
-#  devopsapi:
-#    qualname: devopsapi
-#    handlers:
-#      - socket
 root:
   handlers:
     - socket
