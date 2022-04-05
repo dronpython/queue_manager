@@ -52,9 +52,9 @@ def do_work(request):
             logger.error(f'Error: {str(e)}')
             queue_status = 'error'
             content = json.dumps(response.json()) if response else '{}'
-            content.replace("'", "''")
             response_status_code = str(response.status_code) if response else '520'
 
+        content.replace("'", "''")
         logger.info(f'{log_info}Updating tables...')
         db.insert_data('queue_responses', request.request_id, response_status_code, content)
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id,
