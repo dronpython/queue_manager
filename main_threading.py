@@ -52,6 +52,7 @@ def do_work(request):
             logger.error(f'Error: {str(e)}')
             queue_status = 'error'
             content = json.dumps(response.json()) if response else '{}'
+            content.replace("'", "''")
             response_status_code = str(response.status_code) if response else '520'
 
         logger.info(f'{log_info}Updating tables...')
