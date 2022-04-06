@@ -7,14 +7,9 @@ from threading import Thread, current_thread
 from connectors.old_api import api_request
 from connectors.DBconnector import db, query_dict
 from integration import THREAD_COUNT, REQUEST_LIMIT
+from logging_.filters.requestId_filter import request_id
+from logging_.filters.endpoint_filter import endpoint
 from time import sleep
-from contextvars import ContextVar
-
-
-class RequestIdFilter(logging.Filter):
-    def filter(self, record):
-        record.request_id = request_id.get()
-        return True
 
 
 with open('./logging_/config.yaml', 'r') as stream:
@@ -24,13 +19,11 @@ with open('./logging_/config.yaml', 'r') as stream:
 cfg.dictConfig(config)
 
 logger = logging.getLogger(__name__)
-request_id: ContextVar[str] = ContextVar('request_id', default='service')
-
-logger.addFilter(RequestIdFilter())
 
 
 def do_work(request):
     request_id.set(str(request.request_id))
+    endpoint.set(request.request_url)
     log_info = f'request_id={str(request.request_id)}: '
     if request.request_headers:
         logger.info(f'{log_info}Thread - {current_thread()}. '
@@ -42,11 +35,15 @@ def do_work(request):
             response = api_request(request.request_url, request.request_type,
                                    request.request_body, request.request_headers)
             logger.info(f'{log_info}Got response status={str(response.status_code)}.'
-                        f'Content={str(response.json())}')
+                        f'Text={str(response.text)}',
+                        extra={"status_code": response.status_code})
 
             queue_status = 'done'
             response_status_code = str(response.status_code)
-            content = json.dumps(response.json())
+            if response_status_code == "200":
+                content = json.dumps(response.json())
+            else:
+                content = "{}"
 
         except Exception as e:
             logger.error(f'Error: {str(e)}')

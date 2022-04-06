@@ -1,6 +1,6 @@
 import unittest
 import uuid
-from connectors.old_api import old_api_request
+from connectors.old_api import api_request
 from connectors.DBconnector import db, query_dict
 
 
@@ -37,7 +37,7 @@ class TestConnection(unittest.TestCase):
         headers = {}
         req_type = 'POST'
         req_body = {}
-        response = old_api_request(endpoint, req_type, req_body, headers)
+        response = api_request(endpoint, req_type, req_body, headers)
         self.assertEqual(response.status_code, 401, 'Status codes not equal')
 
     # def tearDown(self) -> None:

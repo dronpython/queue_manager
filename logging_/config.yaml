@@ -13,6 +13,14 @@ filters:
       - "(?<=(?:\"|')access_token(?:\"|'): (?:\"|'))[^\"']+(?=(?:\"|'))"
   appname:
     (): logging_.filters.namefilter.AppFilter
+  requestid:
+    (): logging_.filters.requestId_filter.RequestIdFilter
+  scfilter:
+    (): logging_.filters.statusCodeFilter.StatusCodeFilter
+  epfilter:
+    (): logging_.filters.endpoint_filter.EndpointFilter
+  sysepfilter:
+    (): logging_.filters.systemEndpointFilter.SystemEndpointFilter
 
 formatters:
   simple:
@@ -24,6 +32,10 @@ handlers:
     filters:
       - masking
       - appname
+      - requestid
+      - scfilter
+      - epfilter
+      - sysepfilter
     formatter: simple
     host: log-receiver
     # host: 'localhost'
