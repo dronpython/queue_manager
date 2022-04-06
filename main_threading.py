@@ -24,9 +24,8 @@ logger = logging.getLogger(__name__)
 def do_work(request):
     request_id.set(str(request.request_id))
     endpoint.set(request.request_url)
-    log_info = f'request_id={str(request.request_id)}: '
     if request.request_headers:
-        logger.info(f'{log_info}Thread - {current_thread()}. '
+        logger.info(f'Thread - {current_thread()}. '
                     f'Got request data {str(request)}. '
                     f'Sending request..')
         response = None
@@ -34,7 +33,7 @@ def do_work(request):
             request.request_headers.update({"X-Request-Id": request_id.get()})
             response = api_request(request.request_url, request.request_type,
                                    request.request_body, request.request_headers)
-            logger.info(f'{log_info}Got response status={str(response.status_code)}.'
+            logger.info(f'Got response status={str(response.status_code)}.'
                         f'Text={str(response.text)}',
                         extra={"status_code": response.status_code})
 
@@ -51,16 +50,17 @@ def do_work(request):
             content = json.dumps(response.json()) if response else '{}'
             response_status_code = str(response.status_code) if response else '520'
 
+        logger.info(f'Updating tables...')
         content = content.replace("'", "''")
-        logger.info(f'{log_info}Updating tables...')
+        logger.info(f'Updating tables...')
         db.insert_data('queue_responses', request.request_id, response_status_code, content)
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id,
                                                                status=queue_status)
         db.universal_update(query)
-        logger.info(f'{log_info} Finished!')
+        logger.info(f'Updating finished!')
 
     else:
-        logger.error(f'{log_info}No request data. Skip it')
+        logger.error(f'No request data. Skip it')
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id,
                                                                status='pending')
         db.universal_update(query)
