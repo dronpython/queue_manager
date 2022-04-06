@@ -4,9 +4,7 @@ from psycopg2 import connect, DatabaseError
 from integration import QUEUE_DB_CONFIG
 from typing import Union
 
-extra = {"source": "qmanager"}
 logger = logging.getLogger(__name__)
-logger = logging.LoggerAdapter(logger, extra)
 
 query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.username, qr.request_type, 
                                                qr.request_url, qr.request_body, qr.request_headers
