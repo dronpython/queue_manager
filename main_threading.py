@@ -39,10 +39,23 @@ def do_work(request):
 
             queue_status = 'done'
             response_status_code = str(response.status_code)
-            if response_status_code == "200":
+
+            try:
                 content = json.dumps(response.json())
-            else:
-                content = "{}"
+            except Exception as EE:
+                logger.error(
+                    f'Raised exception = {repr(EE)}. \n'
+                    f'Response status = {str(response.status_code)} \n',
+                    f'Response text = {str(response.text)} \n',
+                    extra={"status_code": response.status_code}
+                )
+                content = json.dumps(
+                    {
+                        "status": "failed",
+                        "errors": ["qmanager error"], 
+                        "payload": {}
+                    }
+                )
 
         except Exception as e:
             logger.error(f'Error: {str(e)}')
