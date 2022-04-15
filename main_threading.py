@@ -65,18 +65,21 @@ def do_work(request):
 
         logger.info(f'Updating tables...')
         content = content.replace("'", "''")
-        logger.info(f'Updating tables...')
-        db.insert_data('queue_responses', request.request_id, response_status_code, content)
+        # db.insert_data('queue_responses', request.request_id, response_status_code, content)
+        db.universal_db_request(query_dict["insert_or_update_data"].format(
+            status=response_status_code,
+            body=content,
+            request_id=request.request_id))
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id,
                                                                status=queue_status)
-        db.universal_update(query)
+        db.universal_db_request(query)
         logger.info(f'Updating finished!')
 
     else:
         logger.error(f'No request data. Skip it')
         query = query_dict["update_main_then_finished"].format(request_id=request.request_id,
                                                                status='pending')
-        db.universal_update(query)
+        db.universal_db_request(query)
 
 
 def worker():
@@ -93,7 +96,7 @@ def main():
             logger.info(f'{str(len(data))} requests found. Start working...')
             logger.info(f"Change status found requests to 'working'...")
             all_ids = "','".join(str(request.request_id) for request in data)
-            db.universal_update(query_dict["change_status_to_working_by_id"].format(all_ids))
+            db.universal_db_request(query_dict["change_status_to_working_by_id"].format(all_ids))
             for request in data:
                 q.put(request)
             sleep(1)
