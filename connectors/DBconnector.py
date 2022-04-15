@@ -17,7 +17,12 @@ query_dict = {"select_new_requests": """SELECT qm.request_id, domain, qm.usernam
               "update_main_then_finished": """UPDATE queue_main
                                               SET status = '{status}', work_count = work_count + 1
                                               WHERE request_id = '{request_id}'""",
-              "change_status_to_working_by_id": "UPDATE queue_main SET status='working' where request_id in ('{}')"}
+              "change_status_to_working_by_id": "UPDATE queue_main SET status='working' where request_id in ('{}')",
+              "insert_or_update_data": """UPDATE queue_responses SET response_status_code='{status}', response_body='{body}' 
+                                          WHERE request_id='{request_id}';
+                                          INSERT INTO queue_responses (request_id, response_status_code, response_body)
+                                          SELECT '{request_id}', '{status}', '{body}'
+                                          WHERE NOT EXISTS (SELECT 1 FROM queue_responses WHERE request_id='{request_id}');"""}
 
 
 class DB:
@@ -91,18 +96,7 @@ class DB:
             finally:
                 return data
 
-    def universal_insert(self, query):
-        """ Вставка записи в базу данных."""
-        with self._connect() as conn:
-            try:
-                cur = conn.cursor()
-                cur.execute(query)
-                conn.commit()
-                cur.close()
-            except (Exception, DatabaseError) as error:
-                logger.error(error)
-
-    def universal_update(self, query):
+    def universal_db_request(self, query):
         """ Обновленме записи в базе данных."""
         with self._connect() as conn:
             try:

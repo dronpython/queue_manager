@@ -27,7 +27,7 @@ class TestConnection(unittest.TestCase):
 
     def test_updating(self):
         query = query_dict["update_main_then_finished"].format(request_id=self.uid, status=self.new_status)
-        db.universal_update(query)
+        db.universal_db_request(query)
         data = db.universal_select(f"SELECT * FROM queue_main WHERE request_id = '{self.__class__.uid}'")
         self.assertTrue(data[0], 'No data to select')
         self.assertEqual(data[0].status, self.new_status, 'STATUS not equals')
