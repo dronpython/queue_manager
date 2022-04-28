@@ -8,7 +8,8 @@ req = {'GET': requests.get,
 
 
 def api_request(endpoint: str, req_type: str, req_body: dict, request_headers: dict) -> requests.Response:
-    new_api_endpoints = ['/bb/v6/create_repo', '/bb/v6/check_repo', '/bb/v6/project']
+    new_api_endpoints = ['/v7/bb/project', '/v7/jira/project', '/v7/confluence/project',
+                         '/v7/nexus/project', '/v7/nexus3/project']
 
     new = False
     if endpoint in new_api_endpoints:
