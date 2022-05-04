@@ -51,7 +51,7 @@ def do_work(request):
                 )
                 content = json.dumps(
                     {
-                        "status": "failed",
+                        "message": "failed",
                         "errors": ["qmanager error"], 
                         "payload": {}
                     }
