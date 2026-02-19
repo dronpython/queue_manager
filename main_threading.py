@@ -107,4 +107,5 @@ if __name__ == '__main__':
     for i in range(int(THREAD_COUNT)):  # Создаем и запускаем потоки
         t = Thread(target=worker)
         t.start()
+        print('test')
     main()
